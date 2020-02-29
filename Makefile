@@ -7,15 +7,15 @@ release: set-version osx linux
 	git push --tags
 
 test:
-	go test . ./app
+	go test . ./app -mod=mod
 
 linux: test
-	GOARCH=amd64 GOOS=linux go build
+	GOARCH=amd64 GOOS=linux go build -mod=mod
 	mv kubemrr ./releases/linux/amd64
 
 osx: test
-	GOARCH=amd64 GOOS=darwin go build
-	mv kubemrr ./releases/darwin/amd64
+	GOARCH=amd64 GOOS=darwin go build -mod=mod
+	mv kubecomplete ./releases/darwin/amd64
 
 set-version:
 ifndef VERSION

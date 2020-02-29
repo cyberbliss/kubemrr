@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/cyberbliss/kubemrr/app"
+	"github.com/cyberbliss/kubecomplete/app"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"net/http/httptest"
 	"os"

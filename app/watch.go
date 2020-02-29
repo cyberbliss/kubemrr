@@ -3,8 +3,8 @@ package app
 import (
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"github.com/asaskevich/govalidator"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"net"
 	"strings"

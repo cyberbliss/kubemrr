@@ -3,7 +3,7 @@ package app
 import (
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"net/rpc"
 	"sort"
 	"strings"
