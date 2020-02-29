@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/mkokho/kubemrr/app"
+	"github.com/cyberbliss/kubemrr/app"
 	"net/http"
 	"net/http/httptest"
 	"os"

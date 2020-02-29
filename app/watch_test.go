@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/url"
 	"reflect"
+	"sort"
 	"testing"
 	"time"
 )
@@ -103,7 +104,8 @@ func TestRunWatchContextMode(t *testing.T) {
 	for _, kc := range f.kubeClients {
 		actualURLs = append(actualURLs, kc.baseURL.String())
 	}
-
+	sort.Strings(expectedURLs)
+	sort.Strings(actualURLs)
 	assert.Equal(t, expectedURLs, actualURLs)
 }
 

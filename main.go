@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/mkokho/kubemrr/app"
+	"github.com/cyberbliss/kubemrr/app"
 	"github.com/spf13/cobra"
 	"os"
 )
