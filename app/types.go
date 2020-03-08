@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/client-go/rest"
 )
 
 type ObjectMeta struct {
@@ -50,6 +51,7 @@ type Config struct {
 	Contexts       []ContextWrap `yaml:"contexts"`
 	Users          []UserWrap    `yaml:"users"`
 	CurrentContext string        `yaml:"current-context"`
+	CurrentClient	*rest.Config
 }
 
 type Cluster struct {

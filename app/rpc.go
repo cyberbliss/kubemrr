@@ -47,7 +47,6 @@ func (c *MrrCache) Objects(f *MrrFilter, os *[]KubeObject) error {
 		log.WithField("server", f.Server).Error("unknown server")
 		return fmt.Errorf("Unknown server %s", f.Server)
 	}
-
 	res := []KubeObject{}
 	sort.Sort(keys)
 	for _, k := range keys {

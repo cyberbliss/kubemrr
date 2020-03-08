@@ -76,6 +76,11 @@ func RunWatch(f Factory, cmd *cobra.Command, args []string) error {
 	clients := make([]KubeClient, len(args))
 	c := f.MrrCache()
 
+	kubeConfigFile, err := cmd.Flags().GetString("kubeconfig")
+	if err != nil {
+		return err
+	}
+
 	for i, arg := range args {
 		var config *Config
 		if govalidator.IsURL(arg) {
@@ -93,6 +98,11 @@ func RunWatch(f Factory, cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("cannot find context %s in kubeconfig", arg)
 			}
 			config.CurrentContext = arg
+			cc, err := BuildConfigFromFlags(arg, kubeConfigFile)
+			if err != nil {
+				return err
+			}
+			config.CurrentClient = cc
 		}
 
 		kc := f.KubeClient(config)

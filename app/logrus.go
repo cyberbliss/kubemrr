@@ -7,11 +7,15 @@ import (
 
 func init() {
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.InfoLevel)
-	log.SetFormatter(&log.JSONFormatter{TimestampFormat: "2006-01-02T15:04:05.000"})
+	log.SetLevel(log.WarnLevel)
+	log.SetFormatter(&log.TextFormatter{})
+
 }
 
-func enableDebug() {
-	log.SetLevel(log.DebugLevel)
-	log.SetFormatter(&log.TextFormatter{})
+func enableVerbose() {
+	log.SetLevel(log.InfoLevel)
 }
+func enableVeryVerbose() {
+	log.SetLevel(log.DebugLevel)
+}
+

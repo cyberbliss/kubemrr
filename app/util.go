@@ -6,6 +6,9 @@ import (
 	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -13,22 +16,45 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"path/filepath"
+	"strings"
 )
 
 func AddCommonFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("address", "a", "127.0.0.1", "The IP address where mirror is accessible")
 	cmd.Flags().String("kubeconfig", "~/.kube/config", "Path to the kubeconfig file")
 	cmd.Flags().IntP("port", "p", 33033, "The port on which mirror is accessible")
-	cmd.Flags().BoolP("verbose", "v", false, "Enables verbose output")
+	cmd.Flags().BoolP("info", "i", false, "Enables verbose output")
+	cmd.Flags().BoolP("verbose", "v", false, "Enables very verbose output")
 }
 
 func RunCommon(cmd *cobra.Command) error {
-	isVerbose, err := cmd.Flags().GetBool("verbose")
+	// sort out the logging level
+	isVerbose, err := cmd.Flags().GetBool("info")
 	if err != nil {
 		return err
 	} else if isVerbose {
-		enableDebug()
+		enableVerbose()
 	}
+	isVeryVerbose, err := cmd.Flags().GetBool("verbose")
+	if err != nil {
+		return err
+	} else if isVeryVerbose {
+		enableVeryVerbose()
+	}
+
+	kubeConfigFile, err := cmd.Flags().GetString("kubeconfig")
+	if err != nil {
+		return err
+	}
+	// if the path to the user's kubeconfig file starts with a ~ then convert this to an absolute path
+	if strings.HasPrefix(kubeConfigFile, "~/") {
+		usr, _ := user.Current()
+		homeDir := usr.HomeDir
+		kubeConfigFile = filepath.Join(homeDir, kubeConfigFile[2:])
+	}
+	cmd.Flags().Set("kubeconfig", kubeConfigFile)
+
 	return nil
 }
 
@@ -58,6 +84,15 @@ func GetKubeconfig(cmd *cobra.Command) (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+func BuildConfigFromFlags(context, kubeconfigPath string) (*rest.Config, error) {
+	log.Infof("context: %s, path: %s", context, kubeconfigPath)
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+		&clientcmd.ConfigOverrides{
+			CurrentContext: context,
+		}).ClientConfig()
 }
 
 type Factory interface {
@@ -185,6 +220,7 @@ func (f *TestFactory) KubeClient(config *Config) KubeClient {
 		kc.baseURL = url
 		f.kubeClients[url.String()] = kc
 	}
+
 	return kc
 }
 
