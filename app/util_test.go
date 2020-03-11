@@ -51,12 +51,12 @@ func TestParseKubeConfig(t *testing.T) {
 			{"prod", Context{"cluster_1", "blue", "user_1"}},
 		},
 		Clusters: []ClusterWrap{
-			{"cluster_1", Cluster{Server: "https://foo.com", CertificateAuthority: "ca1"}},
-			{"cluster_2", Cluster{Server: "https://bar.com", CertificateAuthority: "ca2", SkipVerify: true}},
+			{"cluster_1", Cluster{Server: "https://foo.com", CertificateAuthority: "ca.pem"}},
+			{"cluster_2", Cluster{Server: "https://bar.com", CertificateAuthority: "ca.pem", SkipVerify: true}},
 		},
 		Users: []UserWrap{
-			{"user_1", User{"cert1", "key1"}},
-			{"user_2", User{"cert2", "key2"}},
+			{"user_1", User{"cert.pem", "key.pem"}},
+			{"user_2", User{"cert.pem", "key.pem"}},
 		},
 	}
 

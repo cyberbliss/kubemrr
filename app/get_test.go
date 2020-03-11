@@ -52,6 +52,7 @@ func TestRunGet(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 	f := &TestFactory{mrrClient: tc, stdOut: buf}
 	cmd := NewGetCommand(f)
+	cmd.Flags().Set("kubeconfig", "test_data/kubeconfig_valid")
 
 	expectedOutput := "o1 o2"
 	tests := []struct {
@@ -60,27 +61,50 @@ func TestRunGet(t *testing.T) {
 	}{
 		{
 			aliases:        []string{"po", "pod", "pods"},
-			expectedFilter: MrrFilter{Kind: "pod"},
+			expectedFilter: MrrFilter{
+				Server:    "https://foo.com",
+				Namespace: "blue",
+				Kind:      "pod",
+			},
 		},
 		{
 			aliases:        []string{"svc", "service", "services"},
-			expectedFilter: MrrFilter{Kind: "service"},
+			expectedFilter: MrrFilter{
+				Server:    "https://foo.com",
+				Namespace: "blue",
+				Kind: "service",
+			},
 		},
 		{
 			aliases:        []string{"deployment", "deployments"},
-			expectedFilter: MrrFilter{Kind: "deployment"},
+			expectedFilter: MrrFilter{
+				Kind: "deployment",
+				Server:    "https://foo.com",
+				Namespace: "blue",
+			},
 		},
 		{
 			aliases:        []string{"configmap", "configmaps"},
-			expectedFilter: MrrFilter{Kind: "configmap"},
+			expectedFilter: MrrFilter{
+				Server:    "https://foo.com",
+				Namespace: "blue",
+				Kind: "configmap",
+			},
 		},
 		{
 			aliases:        []string{"ns", "namespace", "namespaces"},
-			expectedFilter: MrrFilter{Kind: "namespace"},
+			expectedFilter: MrrFilter{
+				Server:    "https://foo.com",
+				Namespace: "blue",
+				Kind: "namespace",
+			},
 		},
 		{
 			aliases:        []string{"no", "node", "nodes"},
-			expectedFilter: MrrFilter{Kind: "node"},
+			expectedFilter: MrrFilter{
+				Server:    "https://foo.com",
+				Kind: "node",
+			},
 		},
 	}
 
@@ -105,19 +129,9 @@ func TestRunGet(t *testing.T) {
 func TestRunGetWithKubectlFlags(t *testing.T) {
 	tc := &TestMirrorClient{}
 	f := &TestFactory{mrrClient: tc}
-	f.kubeconfig = Config{
-		CurrentContext: "c1",
-		Contexts: []ContextWrap{
-			{"c1", Context{Cluster: "cluster_1", Namespace: "ns1"}},
-			{"c-2", Context{Cluster: "cluster_2", Namespace: "ns2"}},
-		},
-		Clusters: []ClusterWrap{
-			{"cluster_1", Cluster{Server: "x1.com"}},
-			{"cluster_2", Cluster{Server: "x2.com"}},
-			{"cluster_3", Cluster{Server: "x3.com"}},
-		},
-	}
+
 	cmd := NewGetCommand(f)
+	cmd.Flags().Set("kubeconfig", "test_data/kubeconfig_valid")
 
 	tests := []struct {
 		kubectlCmd        string
@@ -149,34 +163,34 @@ func TestRunGetWithKubectlFlags(t *testing.T) {
 			expectedServer: "s2",
 		},
 		{
-			kubectlCmd:        "--context=c-2",
-			expectedNamespace: "ns2",
-			expectedServer:    "x2.com",
+			kubectlCmd:        "--context=dev",
+			expectedNamespace: "red",
+			expectedServer:    "https://bar.com",
 		},
 		{
-			kubectlCmd:        "--context c-2",
-			expectedNamespace: "ns2",
-			expectedServer:    "x2.com",
+			kubectlCmd:        "--context prod",
+			expectedNamespace: "blue",
+			expectedServer:    "https://foo.com",
 		},
 		{
-			kubectlCmd:        " c --context c1 x --context c-2 c",
-			expectedNamespace: "ns2",
-			expectedServer:    "x2.com",
+			kubectlCmd:        " c --context dev x --context prod c",
+			expectedNamespace: "blue",
+			expectedServer:    "https://foo.com",
 		},
 		{
 			kubectlCmd:        "--cluster=cluster_2",
-			expectedNamespace: "ns1",
-			expectedServer:    "x2.com",
+			expectedNamespace: "blue",
+			expectedServer:    "https://bar.com",
 		},
 		{
 			kubectlCmd:        "--cluster cluster_2",
-			expectedNamespace: "ns1",
-			expectedServer:    "x2.com",
+			expectedNamespace: "blue",
+			expectedServer:    "https://bar.com",
 		},
 		{
-			kubectlCmd:        "x --cluster=cluster_1 r  --cluster=cluster_2 ",
-			expectedNamespace: "ns1",
-			expectedServer:    "x2.com",
+			kubectlCmd:        "x --cluster=cluster_2 r  --cluster=cluster_1 ",
+			expectedNamespace: "blue",
+			expectedServer:    "https://foo.com",
 		},
 		{
 			kubectlCmd:        "--namespace=ns4 --context=c2",
@@ -191,8 +205,8 @@ func TestRunGetWithKubectlFlags(t *testing.T) {
 			expectedServer: "y1.com",
 		},
 		{
-			kubectlCmd:     "--cluster=cluster_3 --context=c2",
-			expectedServer: "x3.com",
+			kubectlCmd:     "--cluster=cluster_2 --context=prod",
+			expectedServer: "https://bar.com",
 		},
 	}
 

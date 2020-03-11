@@ -65,7 +65,8 @@ func RunGet(f Factory, cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("unsupported resource type: %s", args[0])
 	}
 
-	conf, err := f.HomeKubeconfig()
+	//conf, err := f.HomeKubeconfig()
+	conf, err := GetKubeconfig(cmd)
 	if err != nil {
 		return fmt.Errorf("could not read kubeconfig: %s", err)
 	}
@@ -87,17 +88,17 @@ func RunGet(f Factory, cmd *cobra.Command, args []string) error {
 	}
 
 	if strings.HasPrefix(args[0], "p") {
-		err = outputNames(client, makeFilterFor("pod", &conf, kubectlFlags), f.StdOut())
+		err = outputNames(client, makeFilterFor("pod", conf, kubectlFlags), f.StdOut())
 	} else if strings.HasPrefix(args[0], "s") {
-		err = outputNames(client, makeFilterFor("service", &conf, kubectlFlags), f.StdOut())
+		err = outputNames(client, makeFilterFor("service", conf, kubectlFlags), f.StdOut())
 	} else if strings.HasPrefix(args[0], "c") {
-		err = outputNames(client, makeFilterFor("configmap", &conf, kubectlFlags), f.StdOut())
+		err = outputNames(client, makeFilterFor("configmap", conf, kubectlFlags), f.StdOut())
 	} else if strings.HasPrefix(args[0], "na") || args[0] == "ns" {
-		err = outputNames(client, makeFilterFor("namespace", &conf, kubectlFlags), f.StdOut())
+		err = outputNames(client, makeFilterFor("namespace", conf, kubectlFlags), f.StdOut())
 	} else if strings.HasPrefix(args[0], "no") {
-		err = outputNames(client, makeFilterFor("node", &conf, kubectlFlags), f.StdOut())
+		err = outputNames(client, makeFilterFor("node", conf, kubectlFlags), f.StdOut())
 	} else {
-		err = outputNames(client, makeFilterFor("deployment", &conf, kubectlFlags), f.StdOut())
+		err = outputNames(client, makeFilterFor("deployment", conf, kubectlFlags), f.StdOut())
 	}
 
 	if err != nil {

@@ -160,6 +160,7 @@ func parseKubeConfig(filename string) (Config, error) {
 	if err != nil {
 		return res, fmt.Errorf("could not substitute ~ in file %s: %s", filename, err)
 	}
+
 	raw, err := ioutil.ReadFile(fnResolved)
 	if err != nil {
 		return res, fmt.Errorf("could not read file %s: %s", filename, err)

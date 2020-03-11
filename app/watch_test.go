@@ -5,7 +5,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
-	"net/url"
 	"reflect"
 	"sort"
 	"testing"
@@ -47,19 +46,15 @@ func TestRunWatch(t *testing.T) {
 	f.mrrCache = c
 
 	servers := []string{
-		"http://k8s.server1.com",
-		"http://k8s.server2.com",
-	}
-
-	for _, s := range servers {
-		kc := NewTestKubeClient()
-		kc.baseURL, _ = url.Parse(s)
-		f.kubeClients[s] = kc
+		"dev",
+		"prod",
 	}
 
 	cmd := NewWatchCommand(f)
 	cmd.Flags().Set("port", "0")
 	cmd.Flags().Set("interval", "3ms")
+	cmd.Flags().Set("kubeconfig", "test_data/kubeconfig_valid")
+
 	go cmd.RunE(cmd, servers)
 	time.Sleep(50 * time.Millisecond)
 
@@ -69,6 +64,7 @@ func TestRunWatch(t *testing.T) {
 				t.Errorf("Unexpected number of WatchObject requests for [%s] server [%s]: %v", kind, s, kc.watchObjectHits)
 			}
 		}
+
 		for _, kind := range []string{"configmap", "namespace", "service", "deployment", "node"} {
 			if kc.getObjectHits[kind] < 3 {
 				t.Errorf("Expected at least 3 GetObject requests for [%s] server [%s], hits were %v", kind, s, kc.getObjectHits)
@@ -84,9 +80,10 @@ func TestRunWatchFailedPing(t *testing.T) {
 
 	cmd := NewWatchCommand(f)
 	cmd.Flags().Set("port", "0")
-	cmd.RunE(cmd, []string{kc.Server().URL})
+	cmd.Flags().Set("kubeconfig", "test_data/kubeconfig_valid")
+	cmd.RunE(cmd, []string{"dev"})
 
-	assert.Equal(t, kc.pings, 1, "must have pinged server")
+	assert.Equal(t, 1,kc.pings, "must have pinged server")
 }
 
 func TestRunWatchContextMode(t *testing.T) {

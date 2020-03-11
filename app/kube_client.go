@@ -4,17 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
-	v1 "k8s.io/api/core/v1"
 	v1apps "k8s.io/api/apps/v1"
-	"k8s.io/client-go/kubernetes"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
 	testclient "k8s.io/client-go/kubernetes/fake"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	log "github.com/sirupsen/logrus"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"sync"
@@ -63,17 +62,19 @@ func NewKubeClient(config *Config) KubeClient {
 
 	url, _ := url.Parse(config.getCurrentCluster().Server)
 
-	clientset, err := kubernetes.NewForConfig(config.CurrentClient)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return &DefaultKubeClient{
+	dkc := &DefaultKubeClient{
 		client:  httpClient,
 		baseURL: url,
-		//clientset: clientset,
-		kcClient: clientset,
+		//kcClient: clientset,
 	}
+	if config.CurrentClient != nil {
+		clientset, err := kubernetes.NewForConfig(config.CurrentClient)
+		if err != nil {
+			log.Fatal(err)
+		}
+		dkc.kcClient = clientset
+	}
+	return dkc
 }
 
 func (kc *DefaultKubeClient) Server() KubeServer {
@@ -81,7 +82,6 @@ func (kc *DefaultKubeClient) Server() KubeServer {
 }
 
 func (kc *DefaultKubeClient) Ping() error {
-	//nodes, err := kc.clientset.CoreV1().Nodes().List(metav1.ListOptions{})
 	nodes, err := kc.kcClient.CoreV1().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
@@ -93,11 +93,6 @@ func (kc *DefaultKubeClient) Ping() error {
 	}
 
 	return nil
-	//req, err := kc.newRequest("GET", "/", nil)
-	//if err != nil {
-	//	return err
-	//}
-	//return kc.do(req, nil)
 }
 
 func (kc *DefaultKubeClient) WatchObjects(kind string, out chan *ObjectEvent) error {
@@ -420,7 +415,8 @@ type TestKubeClient struct {
 
 func NewTestKubeClient() *TestKubeClient {
 	kc := &TestKubeClient{}
-	kc.baseURL, _ = url.Parse(fmt.Sprintf("http://random-url-%d.com", rand.Intn(999)))
+	//kc.baseURL, _ = url.Parse(fmt.Sprintf("http://random-url-%d.com", rand.Intn(999)))
+	kc.baseURL, _ = url.Parse("https://bar.com")
 	kc.watchObjectLock = &sync.RWMutex{}
 	kc.watchObjectHits = map[string]int{}
 	kc.objectEventsF = func() []*ObjectEvent { return []*ObjectEvent{} }

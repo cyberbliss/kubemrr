@@ -3,7 +3,6 @@ package app
 import (
 	"errors"
 	"fmt"
-	"github.com/asaskevich/govalidator"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"net"
@@ -83,12 +82,12 @@ func RunWatch(f Factory, cmd *cobra.Command, args []string) error {
 
 	for i, arg := range args {
 		var config *Config
-		if govalidator.IsURL(arg) {
-			config, err = NewConfigFromURL(arg)
-			if err != nil {
-				return fmt.Errorf("url %s is not valid: %s", arg, err)
-			}
-		} else {
+		//if govalidator.IsURL(arg) {
+		//	config, err = NewConfigFromURL(arg)
+		//	if err != nil {
+		//		return fmt.Errorf("url %s is not valid: %s", arg, err)
+		//	}
+		//} else {
 			config, err = GetKubeconfig(cmd)
 			if err != nil {
 				return fmt.Errorf("cannot parse kubeconfig file %s: %s", arg, err)
@@ -103,8 +102,7 @@ func RunWatch(f Factory, cmd *cobra.Command, args []string) error {
 				return err
 			}
 			config.CurrentClient = cc
-		}
-
+		//}
 		kc := f.KubeClient(config)
 		log.WithField("server", kc.Server().URL).Info("created client")
 		clients[i] = kc
